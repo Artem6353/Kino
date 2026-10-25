@@ -67,7 +67,7 @@ async function findLicensedArchiveItem(m,run){
     const md=meta?.metadata||{};
     const license=String(md.licenseurl||md.license_url||'').toLowerCase();
     const rights=String(md.rights||'').toLowerCase();
-    const publicDomain=/public[\s-]?domain|no known copyright/i.test(rights)||/creativecommons\.org\/publicdomain|creativecommons\.org\/licenses\/(by|by-sa|cc0)(\/|$)/i.test(license);
+    const publicDomain=/public[\s-]?domain/i.test(rights)||/creativecommons\.org\/publicdomain|creativecommons\.org\/licenses\/(by|by-sa|cc0)(\/|$)/i.test(license);
     if(!publicDomain)continue;
     const itemUrl='https://archive.org/details/'+encodeURIComponent(doc.identifier);
     if(run!==sourceRun)return;
