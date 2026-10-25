@@ -111,12 +111,6 @@ async function play(){
  }else{
   p.innerHTML='<iframe title="Внешний видеоплеер" src="'+parsed.href.replace(/"/g,'&quot;')+'" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
  }
-}t;')+'"></video>';
- }else{
-  let parsed;try{parsed=new URL(u)}catch(e){alert('Некорректная ссылка');return}
-  if(!['http:','https:'].includes(parsed.protocol)){alert('Разрешены только HTTP/HTTPS ссылки');return}
-  p.innerHTML='<iframe title="Внешний видеоплеер" src="'+parsed.href.replace(/"/g,'&quot;')+'" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
- }
 }
 grid.addEventListener('click',e=>{const a=e.target.closest('[data-index]');if(a)openMovie(data[+a.dataset.index])});grid.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-index]'))openMovie(data[+e.target.dataset.index])});search.addEventListener('input',render);document.querySelector('#filters').addEventListener('click',e=>{const b=e.target.closest('[data-filter]');if(!b)return;active=b.dataset.filter;document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('active',x===b));render()});document.querySelectorAll('[data-filter-link]').forEach(a=>a.addEventListener('click',()=>{active=a.dataset.filterLink;document.querySelectorAll('.chip').forEach(x=>x.classList.toggle('active',x.dataset.filter===active));render()}));document.querySelector('#jump').onclick=()=>document.querySelector('#catalog').scrollIntoView({behavior:'smooth'});document.querySelector('#random').onclick=()=>openMovie(data[Math.floor(Math.random()*data.length)]);document.querySelector('#close').onclick=()=>{sourceRun++;activeMovie=null;document.querySelector('#modal').classList.remove('open');document.querySelector('#player').innerHTML='';document.body.style.overflow=''};document.querySelector('#modal').addEventListener('click',e=>{if(e.target.id==='modal')document.querySelector('#close').click()});document.querySelector('#playUrl').onclick=play;document.querySelector('#videoUrl').addEventListener('keydown',e=>{if(e.key==='Enter')play()});document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelector('#close').click()});render();
 </script></body></html>
