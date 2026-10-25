@@ -69,7 +69,7 @@ async function findLicensedArchiveItem(m,run){
     const rights=String(md.rights||'').toLowerCase();
     const normalizeTitle=s=>String(s||'').normalize('NFKD').toLowerCase().replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9а-яё]+/gi,' ').trim();
     const wanted=normalizeTitle(m[0]), found=normalizeTitle(md.title||doc.title);
-    const titleMatches=found===wanted || (found.length>=wanted.length+5 && found.startsWith(wanted+' '));
+    const titleMatches=found===wanted;
     const yearMatches=!m[1] || !md.year || String(md.year)===String(m[1]);
     const publicDomain=/public[\s-]?domain/i.test(rights)||/creativecommons\.org\/publicdomain|creativecommons\.org\/licenses\/(by|by-sa|cc0)(\/|$)/i.test(license);
     if(!publicDomain||!titleMatches||!yearMatches)continue;
@@ -83,7 +83,7 @@ async function findLicensedArchiveItem(m,run){
    }catch(e){/* Skip unavailable metadata; never guess a stream URL. */}
   }
   if(run!==sourceRun)return;
-  player.innerHTML='<div style="text-align:center;padding:24px;color:#aab1bf"><strong style="color:#fff">Автоматический источник не подтверждён</strong><br><br>Я не нашёл подходящий материал с явной свободной лицензией. Это не означает, что фильма нигде нет: используй официальные каталоги ниже.</div>';
+  player.innerHTML='<div style="text-align:center;padding:24px;color:#aab1bf"><strong style="color:#fff">Автоматический источник не подтверждён</strong><br><br>Я не нашёл точное совпадение с явной свободной лицензией. Не буду подставлять похожий фильм вместо нужного.</div>';
   status.textContent='Проверка завершена: подтверждённый свободно лицензированный поток не найден. Ссылки ниже ведут на поиск у внешних сервисов, а не обещают наличие фильма.';
  }catch(e){
   if(run!==sourceRun)return;
