@@ -67,8 +67,12 @@ async function findLicensedArchiveItem(m,run){
     const md=meta?.metadata||{};
     const license=String(md.licenseurl||md.license_url||'').toLowerCase();
     const rights=String(md.rights||'').toLowerCase();
+    const normalizeTitle=s=>String(s||'').normalize('NFKD').toLowerCase().replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9а-яё]+/gi,' ').trim();
+    const wanted=normalizeTitle(m[0]), found=normalizeTitle(md.title||doc.title);
+    const titleMatches=found===wanted || (found.length>=wanted.length+5 && found.startsWith(wanted+' '));
+    const yearMatches=!m[1] || !md.year || String(md.year)===String(m[1]);
     const publicDomain=/public[\s-]?domain/i.test(rights)||/creativecommons\.org\/publicdomain|creativecommons\.org\/licenses\/(by|by-sa|cc0)(\/|$)/i.test(license);
-    if(!publicDomain)continue;
+    if(!publicDomain||!titleMatches||!yearMatches)continue;
     const itemUrl='https://archive.org/details/'+encodeURIComponent(doc.identifier);
     if(run!==sourceRun)return;
     status.textContent='Найден материал с явным указанием Public Domain / совместимой CC-лицензии. Открывается страница источника; проверьте условия конкретного материала.';
@@ -87,12 +91,27 @@ async function findLicensedArchiveItem(m,run){
   status.textContent='Не удалось связаться с Internet Archive. Это может быть временная сетевая ошибка.';
  }
 }
-function play(){
+async function play(){
  const u=document.querySelector('#videoUrl').value.trim();
  if(!/^https?:\/\//i.test(u)){alert('Вставь корректную ссылку, начинающуюся с http:// или https://');return}
+ let parsed;try{parsed=new URL(u)}catch(e){alert('Некорректная ссылка');return}
+ if(!['http:','https:'].includes(parsed.protocol)){alert('Разрешены только HTTP/HTTPS ссылки');return}
  const p=document.querySelector('#player');
- if(/\.(mp4|webm|ogg)(\?.*)?$/i.test(u)){
-  p.innerHTML='<video controls autoplay playsinline src="'+u.replace(/"/g,'&quot;')+'"></video>';
+ if(/\.m3u8(\?.*)?$/i.test(parsed.href)){
+  p.innerHTML='<video id="hlsVideo" controls autoplay playsinline style="width:100%;height:100%"></video>';
+  const video=document.querySelector('#hlsVideo');
+  if(video.canPlayType('application/vnd.apple.mpegurl')){video.src=parsed.href;video.play().catch(()=>{});return}
+  try{
+   if(!window.Hls) await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src='https://cdn.jsdelivr.net/npm/hls.js@1.6.13/dist/hls.min.js';script.onload=resolve;script.onerror=reject;document.head.appendChild(script)});
+   if(window.Hls&&window.Hls.isSupported()){const hls=new window.Hls();hls.loadSource(parsed.href);hls.attachMedia(video);hls.on(window.Hls.Events.MANIFEST_PARSED,()=>video.play().catch(()=>{}))}
+   else p.innerHTML='<div style="padding:24px;text-align:center;color:#aab1bf">Этот браузер не поддерживает HLS. Попробуй открыть источник в другом браузере.</div>';
+  }catch(e){p.innerHTML='<div style="padding:24px;text-align:center;color:#aab1bf">Не удалось загрузить HLS-плеер. Проверь соединение и ссылку.</div>'}
+ }else if(/\.(mp4|webm|ogg)(\?.*)?$/i.test(parsed.href)){
+  p.innerHTML='<video controls autoplay playsinline src="'+parsed.href.replace(/"/g,'&quot;')+'"></video>';
+ }else{
+  p.innerHTML='<iframe title="Внешний видеоплеер" src="'+parsed.href.replace(/"/g,'&quot;')+'" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>';
+ }
+}t;')+'"></video>';
  }else{
   let parsed;try{parsed=new URL(u)}catch(e){alert('Некорректная ссылка');return}
   if(!['http:','https:'].includes(parsed.protocol)){alert('Разрешены только HTTP/HTTPS ссылки');return}
